@@ -1,35 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Little Lemon</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Example</title>
+    <style>
+        canvas {
+            border: 1px solid #d3d3d3;
+            background: #f1f1f1;
+        }
+    </style>
 
-  <meta property="og:title" content="Our Menu">
-  <meta property="og:type"  content="website">
-  <meta property="og:image" content="logo.png">
-  <meta property="og:url"   content="https://littlelemon/">
-  <meta property="og:description" content="Little Lemon is a family-owned Mediterranean restaurant, focused on traditional recipes served with a modern twist.">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:site_name" content="Little Lemon">
-
-  <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <header>
-    <img src="logo.png">
-  </header>
-  <main>
-    <form>
-      <div>
-        <label for="username">Username:</label>
-        <input type="text" required minlength="2" id="username" name="username">
-      </div>
-      <div>
-        <label for="password">Password:</label>
-        <input type="password" required minlength="2" id="password" name="password">
-      </div>
-      <button type="submit">Log In</button>
-    </form>
-  </main>
-</body>
+<body onload="startGame()">
+    <button id="objOne">First Obstacle</button>
+    <button id="objTwo">Second Obstacle</button>
 
+
+    <script id="gameWork">
+        var unityPlayer;
+
+        function startGame() {
+            unityPlayer = new component(30, 30, "red", 10, 120);
+            gameArea.start();
+        }
+
+        var gameArea = {
+            canvas : document.createElement("canvas"),
+            start : function() {
+                this.canvas.width = 480;
+                this.canvas.height = 270;
+                this.context = this.canvas.getContext("2d");
+                document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+                this.interval = setInterval(updateGameArea, 20);
+            },
+            clear : function() {
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+        }
+
+        function component(width, height, color, x, y) {
+            this.width = width;
+            this.height = height;
+            this.speedX = 0;
+            this.speedY = 0;
+            this.x = x;
+            this.y = y;    
+            this.update = function() {
+                ctx = gameArea.context;
+                ctx.fillStyle = color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+            this.newPos = function() {
+                switch (unityCommand) {
+                case "Up":
+                    unityPlayer.moveUp();
+                    break;
+                case "Down":
+                    unityPlayer.moveDown();
+                    break;
+                case "Left":
+                    unityPlayer.moveLeft();
+                    break;
+                case "Right":
+                    unityPlayer.moveRight();
+                    break;
+                default:
+                   break;
+                }
+                this.x += this.speedX;
+                this.y += this.speedY;        
+            }    
+        }
+
+        function updateGameArea() {
+            gameArea.clear();
+            unityPlayer.newPos();    
+            unityPlayer.update();
+            unityPlayer.clearMove();
+        }
+
+        function moveUp() {
+            unityPlayer.speedY = -1; 
+        }
+
+        function moveDown() {
+            unityPlayer.speedY = 1; 
+        }
+
+        function moveLeft() {
+            unityPlayer.speedX = -1; 
+        }
+
+        function moveRight() {
+            unityPlayer.speedX = 1; 
+        }
+
+        function clearMove() {
+            unityPlayer.speedX = 0;
+            unityPlayer.speedY = 0;
+            unityCommand = "";
+        }
+
+//switch (unityCommand) {
+    //case "Up":
+    //                unityPlayer.moveUp();
+    //                break;
+    //            case "Down":
+    //                unityPlayer.moveDown();
+    //                break;
+    //            case "Left":
+    //                unityPlayer.moveLeft();
+    //                break;
+    //            case "Right":
+    //                unityPlayer.moveRight();
+    //                break;
+    //            default:
+    //               break;
+    //            }
+
+
+        const socket = new WebSocket('ws://localhost:8080');
+        var unityCommand;
+        socket.onopen = () => {
+            console.log('Connected to WebSocket server');
+        };
+
+        socket.onmessage = (event) => {
+            console.log('Message from server:', event.data);
+            unityCommand = event.data;
+            };
+        
+        
+        
+        
+        document.getElementById('objOne').addEventListener('click', () => {
+            const message = 'W1';
+            console.log('Sending message:', message);
+            socket.send(message);
+            });
+
+        document.getElementById('objTwo').addEventListener('click', () => {
+            const message = 'W2';
+            console.log('Sending message:', message);
+            socket.send(message);
+            });
+    </script>
+</body>
 </html>
