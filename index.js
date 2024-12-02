@@ -1,8 +1,11 @@
+//--Create's server on a local port
 const WebSocket = require('ws')
 const wss = new WebSocket.Server({port: 8080}, ()=>{
     console.log('Server started')
 })
 
+
+//--When the server sends a message this sends the message to all clients
 wss.on('connection', (ws)=>{
     ws.on('message', (data)=>{
         console.log('data received %o', data.toString())
@@ -14,16 +17,8 @@ wss.on('connection', (ws)=>{
         })
         })
     })
-    
-//wss.on('connection', (ws)=>{
-//    ws.on('message', (data)=>{
-//        console.log('data received %o', data.toString())
-//        ws.send(data.toString())
-//        })
-//    })
 
-
-
+//Sends a message that the Server is up
 wss.on('listening', ()=>{
     console.log('Server is listening on port 8080')
 })

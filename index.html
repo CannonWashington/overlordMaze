@@ -15,6 +15,8 @@
 <body onload="startGame()">
     <button id="objOne">First Obstacle</button>
     <button id="objTwo">Second Obstacle</button>
+    <button id="objThree">Third Obstacle</button>
+    <button id="objFour">Fourth Obstacle</button>
 
 
     <script id="gameWork">
@@ -24,9 +26,11 @@
             unityPlayer = new component(30, 30, "red", 10, 120);
             gameArea.start();
         }
-
+        
+        //--This variable is the Webpages map of the Unity game
         var gameArea = {
             canvas : document.createElement("canvas"),
+            //--This function is used to set up the area at the start of the Webpage, it also sets up an interval so that it can update in real time. 
             start : function() {
                 this.canvas.width = 480;
                 this.canvas.height = 270;
@@ -34,36 +38,45 @@
                 document.body.insertBefore(this.canvas, document.body.childNodes[0]);
                 this.interval = setInterval(updateGameArea, 20);
             },
+            //--This function is used to clear the map when updating
             clear : function() {
                 this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
             }
         }
 
+        //--This function sets up the Unity Player on the map. 
         function component(width, height, color, x, y) {
             this.width = width;
             this.height = height;
             this.speedX = 0;
             this.speedY = 0;
             this.x = x;
-            this.y = y;    
+            this.y = y;
+            //--This function sets the Unity Player up on the map on updates    
             this.update = function() {
                 ctx = gameArea.context;
                 ctx.fillStyle = color;
                 ctx.fillRect(this.x, this.y, this.width, this.height);
             }
+            //--This function sets the position of the Unity player on resets, not currently working
             this.newPos = function() {
+                //--This Switch is meant to check the messages from the server and change the speed of the Unity Player's map character on the webpage based on the message
                 switch (unityCommand) {
                 case "Up":
                     unityPlayer.moveUp();
+                    unityCommand = "";
                     break;
                 case "Down":
                     unityPlayer.moveDown();
+                    unityCommand = "";
                     break;
                 case "Left":
                     unityPlayer.moveLeft();
+                    unityCommand = "";
                     break;
                 case "Right":
                     unityPlayer.moveRight();
+                    unityCommand = "";
                     break;
                 default:
                    break;
@@ -72,7 +85,7 @@
                 this.y += this.speedY;        
             }    
         }
-
+        //--This function calls all of the functions used to Update the webpage map
         function updateGameArea() {
             gameArea.clear();
             unityPlayer.newPos();    
@@ -81,19 +94,19 @@
         }
 
         function moveUp() {
-            unityPlayer.speedY = -1; 
+            unityPlayer.speedY -= 1; 
         }
 
         function moveDown() {
-            unityPlayer.speedY = 1; 
+            unityPlayer.speedY += 1; 
         }
 
         function moveLeft() {
-            unityPlayer.speedX = -1; 
+            unityPlayer.speedX -= 1; 
         }
 
         function moveRight() {
-            unityPlayer.speedX = 1; 
+            unityPlayer.speedX += 1; 
         }
 
         function clearMove() {
@@ -119,13 +132,14 @@
     //               break;
     //            }
 
-
+        //--This connects to the server on start
         const socket = new WebSocket('ws://localhost:8080');
         var unityCommand;
         socket.onopen = () => {
             console.log('Connected to WebSocket server');
         };
 
+        //--When the web page gets a message it puts the data into unityCommand
         socket.onmessage = (event) => {
             console.log('Message from server:', event.data);
             unityCommand = event.data;
@@ -133,7 +147,7 @@
         
         
         
-        
+        //--This sends a message when the objOne button is pressed, sending the message through the server to Unity which then moves the connected object
         document.getElementById('objOne').addEventListener('click', () => {
             const message = 'W1';
             console.log('Sending message:', message);
@@ -142,6 +156,16 @@
 
         document.getElementById('objTwo').addEventListener('click', () => {
             const message = 'W2';
+            console.log('Sending message:', message);
+            socket.send(message);
+            });
+        document.getElementById('objThree').addEventListener('click', () => {
+            const message = 'W3';
+            console.log('Sending message:', message);
+            socket.send(message);
+            });
+        document.getElementById('objFour').addEventListener('click', () => {
+            const message = 'W4';
             console.log('Sending message:', message);
             socket.send(message);
             });
